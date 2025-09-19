@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Relative Pronouns — Quick Quiz</title>
+<meta name="description" content="Mobile-first Relative Pronouns quiz for students. Enter name → take quiz → get score. Teacher backend via Google Sheets." />
+<style>
+  /* Mobile-first simple styling */
+  :root{
+    --bg:#f6fbff; --card:#ffffff; --muted:#556; --accent:#2b8cff; --ok:#1b8f3a; --bad:#d43f3a;
+    --radius:12px; --pad:14px;
+  }
+  html,body{height:100%}
+  body{
+    margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+    background:linear-gradient(180deg,#ecf7ff, var(--bg)); color:#123; -webkit-font-smoothing:antialiased;
+    padding:18px;
+  }
+  .container{max-width:820px;margin:0 auto}
+  header{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+  h1{font-size:20px;margin:0}
+  .card{background:var(--card); border-radius:var(--radius); padding:var(--pad); box-shadow:0 6px 20px rgba(20,40,80,0.06)}
+  label{display:block;margin-bottom:6px;font-weight:600}
+  input[type="text"], textarea, select{width:100%; padding:10px;border-radius:8px;border:1px solid #d6e6ff;background:#fbfeff}
+  textarea{min-height:72px; resize:vertical}
+  .muted{color:var(--muted); font-size:13px}
+  .row{display:flex;gap:12px}
+  .col{flex:1}
+  .start-area{display:grid; gap:10px; margin-bottom:12px}
+  .small{font-size:13px}
+  button{background:var(--accent); color:white;border:0;padding:10px 14px;border-radius:10px;font-weight:700}
+  button[disabled]{opacity:.5}
+  .section{margin-top:14px}
+  .question{margin:10px 0;padding:10px;border-radius:8px;border:1px dashed #e9f3ff;background:#fcfeff}
+  .qhead{font-weight:700;margin-bottom:6px}
+  .progress{font-size:13px;margin-top:8px}
+  .results{margin-top:12px}
+  .result-row{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px}
+  .badge{padding:6px 8px;border-radius:8px;font-weight:700}
+  .ok{background:rgba(27,143,58,0.12);color:var(--ok);border:1px solid rgba(27,143,58,0.18)}
+  .wrong{background:rgba(212,63,58,0.08);color:var(--bad);border:1px solid rgba(212,63,58,0.12)}
+  table{width:100%;border-collapse:collapse;margin-top:8px}
+  th,td{padding:8px;border-bottom:1px solid #eef7ff;text-align:left;font-size:14px}
+  .footnote{font-size:13px;color:var(--muted);margin-top:8px}
+  .topcontrols{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .notice{padding:10px;border-radius:8px;background:#fff4d9;border:1px solid #ffe1a8;color:#7a5a00}
+  @media(min-width:720px){
+    h1{font-size:24px}
+  }
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div style="flex:1">
+      <h1>Relative Pronouns — Quick Quiz</h1>
+      <div class="muted small">Mobile-friendly quiz — enter name, answer, submit, and get immediate score.</div>
+    </div>
+    <div class="topcontrols">
+      <button id="btn-start" aria-controls="quiz" aria-expanded="false">Start Quiz</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Landing / Start form -->
+    <section id="landing" class="card start-area" aria-labelledby="start-heading">
+      <div>
+        <h2 id="start-heading" style="margin:0 0 6px 0;font-size:16px">Enter details to start</h2>
+        <div class="muted small">Name is required. Class/Section is optional. Start when ready.</div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label for="student-name">Full name <span aria-hidden="true">*</span></label>
+          <input id="student-name" type="text" inputmode="text" autocomplete="name" aria-required="true" />
+        </div>
+        <div class="col" style="max-width:160px">
+          <label for="student-class">Class / Section</label>
+          <input id="student-class" type="text" inputmode="text" placeholder="e.g., 7A" />
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button id="start-btn" disabled>Start</button>
+        <div class="muted small">or press Enter</div>
+      </div>
+
+      <div class="footnote">
+        <strong>Note:</strong> Teacher backend URL can be added later. If no backend configured, results save only on this device (localStorage).
+      </div>
+    </section>
+
+    <!-- Quiz area (hidden until started) -->
+    <section id="quiz" style="display:none;margin-top:12px">
+      <div class="card" id="reference" aria-live="polite">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>Part A — Quick Guide (Reference)</strong>
+          <button id="toggle-ref" class="small">Collapse</button>
+        </div>
+        <div id="ref-body" style="margin-top:8px">
+          <p class="muted">Relative pronouns connect clauses to nouns: <strong>who</strong> (people - subject), <strong>whom</strong> (people - object), <strong>which</strong> (things), <strong>that</strong> (people/things, restrictive), <strong>whose</strong> (possession).</p>
+          <ul class="muted small">
+            <li>Who → people (subject). E.g., The girl <em>who</em> won is famous.</li>
+            <li>Whom → people (object). E.g., The man <em>whom</em> we met was kind.</li>
+            <li>Which/That → things (both often acceptable). E.g., The book <em>that</em> I read.</li>
+            <li>Whose → possession. E.g., The student <em>whose</em> bag is red.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card section" aria-labelledby="partb-heading">
+        <h3 id="partb-heading">Part B — Fill in the blanks (10 × 1 point)</h3>
+        <div class="muted small">Type the correct relative pronoun in each blank.</div>
+
+        <!-- Part B questions -->
+        <div id="partb-questions" style="margin-top:8px"></div>
+      </div>
+
+      <div class="card section" aria-labelledby="partc-heading">
+        <h3 id="partc-heading">Part C — Sentence Combining (5 × 2 points)</h3>
+        <div class="muted small">Type your combined sentence in the textarea. There is also an optional multiple-choice auto-grade mode (teacher can enable below).</div>
+
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <label style="margin:0">Enable teacher MC auto-grade:</label>
+          <input id="enable-mc" type="checkbox" aria-label="Enable teacher multiple choice auto grading" />
+          <div class="muted small">When ON, teacher-supplied MC answers are shown and will be used if selected by student.</div>
+        </div>
+
+        <div id="partc-questions" style="margin-top:8px"></div>
+      </div>
+
+      <div class="card section" aria-labelledby="partd-heading">
+        <h3 id="partd-heading">Part D — Error Correction (5 × 2 points)</h3>
+        <div class="muted small">Read the original sentence and type the corrected sentence.</div>
+        <div id="partd-questions" style="margin-top:8px"></div>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center;margin-top:14px">
+        <button id="review-btn">Review answers</button>
+        <button id="submit-btn">Submit quiz</button>
+        <div id="progress" class="muted small progress" aria-live="polite"></div>
+      </div>
+
+      <div id="results" class="card results" style="display:none" aria-live="polite"></div>
+    </section>
+
+    <!-- Footer -->
+    <div style="margin-top:12px" class="muted small">
+      <strong>Privacy:</strong> This quiz collects only name and class; avoid entering emails or sensitive info. See README for backend deployment details.
+    </div>
+  </main>
+</div>
+
+<script>
+/*
+  index.html - Relative Pronouns Quick Quiz
+  - Single-file front-end
+  - Insert your Google Apps Script Web App URL into variable `BACKEND_URL` below.
+  - If BACKEND_URL is null/empty or POST fails, the app will save submissions to localStorage.
+*/
+
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxenjVn4xrK6tXEEhpUnhC6GHbBOzLIx5NmHDy1SP7fOZTmVuYq7IpdXFfwAkhkLDD1/exec" 
+/* <-- PASTE YOUR APPS SCRIPT WEB APP URL HERE (e.g. https://script.google.com/macros/s/XXXXX/exec)
+   If left empty or backend unreachable, the app will save to localStorage only.
+*/
+
+/////////////////////// ANSWER KEY (as required) ///////////////////////
+// This object holds questions, allowed answers, canonical sentences, keywords, and points per question.
+// You can edit this later to change the quiz.
+const ANSWER_KEY = {
+  meta: { totalPoints: 10*1 + 5*2 + 5*2 },
+  partB: [
+    {id:"B1", q:"The man _______ lives next door is a doctor.", answers:["who"]},
+    {id:"B2", q:"This is the student _______ project won the prize.", answers:["whose"]},
+    {id:"B3", q:"The girl _______ you met yesterday is my cousin.", answers:["whom","who"]},
+    {id:"B4", q:"The phone _______ is on the table belongs to me.", answers:["which","that"]},
+    {id:"B5", q:"The movie _______ we watched last night was funny.", answers:["which","that"]},
+    {id:"B6", q:"The teacher, _______ everyone admires, retired last year.", answers:["whom","who"]},
+    {id:"B7", q:"The car _______ broke down was very old.", answers:["which","that"]},
+    {id:"B8", q:"The woman _______ house is at the corner is my aunt.", answers:["whose"]},
+    {id:"B9", q:"The dog _______ barked all night kept us awake.", answers:["that","which"]},
+    {id:"B10", q:"The man to _______ you spoke is my uncle.", answers:["whom","who"]}
+  ],
+  partC: [
+    // 2 points each
+    {
+      id:"C1",
+      prompt1:"I saw a girl. She was carrying a basket of flowers.",
+      canonical:"I saw a girl who was carrying a basket of flowers.",
+      alternatives:[],
+      keywords:["girl","carrying","basket","flowers"]
+    },
+    {
+      id:"C2",
+      prompt1:"This is the book. I bought it yesterday.",
+      canonical:"This is the book which I bought yesterday.",
+      alternatives:["This is the book that I bought yesterday.","This is the book which I bought yesterday."],
+      keywords:["book","bought","yesterday"]
+    },
+    {
+      id:"C3",
+      prompt1:"He met a singer. Everyone loves her voice.",
+      canonical:"He met a singer whose voice everyone loves.",
+      alternatives:[],
+      keywords:["singer","whose","voice","loves"]
+    },
+    {
+      id:"C4",
+      prompt1:"The boy is my classmate. His father is a pilot.",
+      canonical:"The boy whose father is a pilot is my classmate.",
+      alternatives:[],
+      keywords:["boy","whose","father","pilot","classmate"]
+    },
+    {
+      id:"C5",
+      prompt1:"That is the teacher. We respect him a lot.",
+      canonical:"That is the teacher whom we respect a lot.",
+      alternatives:["That is the teacher whom we respect a lot.","That is the teacher who we respect a lot."],
+      keywords:["teacher","respect"]
+    }
+  ],
+  partD: [
+    // 2 points each
+    {
+      id:"D1",
+      original:"The boy whom won the race is very fast.",
+      corrected:"The boy who won the race is very fast.",
+      alternatives:[],
+      keywords:["boy","who","won","race","fast"]
+    },
+    {
+      id:"D2",
+      original:"The pen who is on the desk belongs to me.",
+      corrected:"The pen which is on the desk belongs to me.",
+      alternatives:["The pen that is on the desk belongs to me."],
+      keywords:["pen","which","desk","belongs","me"]
+    },
+    {
+      id:"D3",
+      original:"She is the girl that’s dress is blue.",
+      corrected:"She is the girl whose dress is blue.",
+      alternatives:[],
+      keywords:["girl","whose","dress","blue"]
+    },
+    {
+      id:"D4",
+      original:"The man which we met yesterday is a lawyer.",
+      corrected:"The man whom/that we met yesterday is a lawyer.",
+      alternatives:["The man whom we met yesterday is a lawyer.","The man that we met yesterday is a lawyer.","The man who we met yesterday is a lawyer."],
+      keywords:["man","met","yesterday","lawyer"]
+    },
+    {
+      id:"D5",
+      original:"I have a friend, that mother is a doctor.",
+      corrected:"I have a friend, whose mother is a doctor.",
+      alternatives:[],
+      keywords:["friend","whose","mother","doctor"]
+    }
+  ]
+};
+
+
+/////////////////////// Utility functions /////////////////////////
+
+// Strict normalization per requirements:
+// - trim
+// - lowercase
+// - collapse multiple spaces
+// - remove leading/trailing punctuation (.,;:!?'"()[])
+// - remove redundant spaces
+function normalizeAnswer(s){
+  if(s==null) return "";
+  let str = String(s).trim();
+  // remove punctuation at ends
+  str = str.replace(/^[\s\.\,\;\:\!\?\(\)\[\]\"\'-]+|[\s\.\,\;\:\!\?\(\)\[\]\"\'-]+$/g,"");
+  // collapse spaces
+  str = str.replace(/\s+/g," ");
+  return str.toLowerCase();
+}
+
+// check if normalized matches any allowed answers
+function isExactMatchNorm(user, allowedArr){
+  const u = normalizeAnswer(user);
+  for(const a of allowedArr){
+    if(normalizeAnswer(a) === u) return true;
+  }
+  return false;
+}
+
+// Keyword check: require all keywords to exist somewhere in answer (normalized)
+function keywordsPresent(user, keywords){
+  const n = normalizeAnswer(user);
+  let found = 0;
+  for(const kw of keywords){
+    if(n.includes(kw.toLowerCase())) found++;
+  }
+  return {found, total:keywords.length, ok: found === keywords.length};
+}
+
+// helper: create element with attributes
+function el(tag, props={}, children=[]){
+  const e = document.createElement(tag);
+  for(const k in props) {
+    if(k.startsWith("data-")) e.setAttribute(k, props[k]);
+    else e[k]=props[k];
+  }
+  for(const c of children) if(typeof c === "string") e.appendChild(document.createTextNode(c)); else e.appendChild(c);
+  return e;
+}
+
+/////////////////////// Build UI Questions /////////////////////////
+const partBContainer = document.getElementById("partb-questions");
+const partCContainer = document.getElementById("partc-questions");
+const partDContainer = document.getElementById("partd-questions");
+
+function buildQuestions(){
+  // Part B
+  ANSWER_KEY.partB.forEach((qb, idx)=>{
+    const id = qb.id;
+    const wrap = el("div",{className:"question", role:"group", "aria-labelledby":id+"-label"});
+    wrap.appendChild(el("div",{className:"qhead", id:id+"-label"}, [(idx+1)+". "+ qb.q]));
+    const input = el("input",{type:"text", id:id, placeholder:"Type relative pronoun (e.g., 'who')"});
+    input.setAttribute("aria-label", qb.q);
+    wrap.appendChild(input);
+    partBContainer.appendChild(wrap);
+  });
+
+  // Part C - combining: textarea + optional MC
+  ANSWER_KEY.partC.forEach((qc, idx)=>{
+    const id = qc.id;
+    const wrap = el("div",{className:"question", role:"group", "aria-labelledby":id+"-label"});
+    wrap.appendChild(el("div",{className:"qhead", id:id+"-label"}, [(idx+1)+". "+ qc.prompt1]));
+    const ta = el("textarea",{id:id, placeholder:"Type the combined sentence here..."});
+    ta.setAttribute("aria-label", "Combined sentence for question "+(idx+1));
+    wrap.appendChild(ta);
+
+    // Optional MC area (hidden by default, toggled by enable-mc)
+    const mcWrapper = el("div",{id:id+"-mc", style:"margin-top:8px;display:none"});
+    mcWrapper.appendChild(el("label",{},["Or choose an auto-grade option (teacher MC):"]));
+    const sel = el("select",{id:id+"-mc-select"});
+    sel.appendChild(el("option",{value:""},["-- choose --"]));
+    // add canonical and alternatives
+    sel.appendChild(el("option",{value:qc.canonical},[qc.canonical]));
+    for(const alt of (qc.alternatives||[])) sel.appendChild(el("option",{value:alt},[alt]));
+    mcWrapper.appendChild(sel);
+    wrap.appendChild(mcWrapper);
+
+    partCContainer.appendChild(wrap);
+  });
+
+  // Part D - error correction
+  ANSWER_KEY.partD.forEach((qd, idx)=>{
+    const id = qd.id;
+    const wrap = el("div",{className:"question", role:"group", "aria-labelledby":id+"-label"});
+    wrap.appendChild(el("div",{className:"qhead", id:id+"-label"}, [(idx+1)+". Original: \""+ qd.original + "\""]));
+    const input = el("input",{type:"text", id:id, placeholder:"Type the corrected sentence here..."});
+    input.setAttribute("aria-label","Corrected sentence for question "+(idx+1));
+    wrap.appendChild(input);
+    partDContainer.appendChild(wrap);
+  });
+}
+
+buildQuestions();
+
+/////////////////////// Interactions /////////////////////////
+const startBtn = document.getElementById("start-btn");
+const nameInput = document.getElementById("student-name");
+const classInput = document.getElementById("student-class");
+const landing = document.getElementById("landing");
+const quiz = document.getElementById("quiz");
+const btnStart = document.getElementById("btn-start");
+const toggleRefBtn = document.getElementById("toggle-ref");
+const refBody = document.getElementById("ref-body");
+const enableMC = document.getElementById("enable-mc");
+const reviewBtn = document.getElementById("review-btn");
+const submitBtn = document.getElementById("submit-btn");
+const progressDisplay = document.getElementById("progress");
+const resultsDiv = document.getElementById("results");
+
+nameInput.addEventListener("input", ()=> {
+  startBtn.disabled = nameInput.value.trim().length === 0;
+});
+nameInput.addEventListener("keydown", (e)=>{ if(e.key === "Enter") startQuiz(); });
+startBtn.addEventListener("click", startQuiz);
+btnStart.addEventListener("click", startQuiz);
+
+function startQuiz(){
+  if(nameInput.value.trim().length === 0){
+    alert("Please enter your name to start.");
+    nameInput.focus();
+    return;
+  }
+  landing.style.display = "none";
+  quiz.style.display = "block";
+  document.getElementById("btn-start").setAttribute("aria-expanded","true");
+  updateProgress();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+toggleRefBtn.addEventListener("click", ()=>{
+  if(refBody.style.display === "none"){
+    refBody.style.display = "block";
+    toggleRefBtn.textContent = "Collapse";
+  } else {
+    refBody.style.display = "none";
+    toggleRefBtn.textContent = "Expand";
+  }
+});
+
+// toggle MC selects visibility
+enableMC.addEventListener("change", ()=>{
+  const show = enableMC.checked;
+  ANSWER_KEY.partC.forEach(c=>{
+    const mcWrap = document.getElementById(c.id+"-mc");
+    if(mcWrap) mcWrap.style.display = show ? "block" : "none";
+  });
+});
+
+// review answers (simple): show a confirm dialog listing unanswered count
+reviewBtn.addEventListener("click", ()=>{
+  const missing = countAnsweredMissing();
+  if(missing > 0){
+    if(!confirm(`There are ${missing} unanswered questions. Do you still want to submit?`)) return;
+  }
+  alert("You can now press Submit to finish and get your score.");
+});
+
+// submit handler
+submitBtn.addEventListener("click", async ()=>{
+  // validation: name present
+  if(nameInput.value.trim().length === 0){
+    alert("Name is required.");
+    nameInput.focus(); return;
+  }
+  // at least one answer present?
+  if(!hasAtLeastOneAnswer()){
+    alert("Please answer at least one question before submitting.");
+    return;
+  }
+
+  // final confirm
+  if(!confirm("Submit quiz now? You will get an immediate score. (You can still manually regrade some answers later)")) return;
+
+  // grade
+  const gradeResult = gradeQuiz();
+
+  // show results
+  showResults(gradeResult);
+
+  // prepare payload
+  const payload = {
+    name: nameInput.value.trim(),
+    class: classInput.value.trim(),
+    timestamp: new Date().toISOString(),
+    answers: gradeResult.rawAnswers,
+    score_total: gradeResult.score_total,
+    score_per_section: gradeResult.score_per_section
+  };
+
+  // try to POST to backend if configured
+  if(BACKEND_URL && BACKEND_URL.length>5){
+    try {
+      progressDisplay.textContent = "Saving submission...";
+      const resp = await fetch(BACKEND_URL, {
+        method: "POST",
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const text = await resp.text();
+      if(resp.ok){
+        progressDisplay.textContent = "Submission saved to teacher's sheet.";
+      } else {
+        console.warn("Backend returned non-ok:", resp.status, text);
+        saveToLocalFallback(payload, "Backend error: "+resp.status);
+      }
+    } catch(err){
+      console.error("POST failed:", err);
+      saveToLocalFallback(payload, "Network or backend unreachable");

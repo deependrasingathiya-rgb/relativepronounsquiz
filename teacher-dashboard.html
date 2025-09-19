@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Teacher Dashboard — Relative Pronouns Submissions</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;margin:12px;background:#f7fbff;color:#123}
+  .card{background:#fff;border-radius:10px;padding:12px;box-shadow:0 8px 30px rgba(20,50,90,0.06)}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:8px;border-bottom:1px solid #eef7ff;text-align:left}
+  th{cursor:pointer;background:#f0f8ff}
+  .muted{color:#556;font-size:13px}
+  .top{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="top">
+    <h2 style="margin:0">Teacher Dashboard — Submissions</h2>
+    <div>
+      <input id="backend-url" type="text" placeholder="Paste Apps Script GET URL here" style="width:320px;padding:8px;border-radius:6px;border:1px solid #cfe8ff" />
+      <button id="load">Load</button>
+    </div>
+  </div>
+
+  <div id="status" class="muted">Enter your Apps Script web app URL above and click Load.</div>
+  <div id="tableWrap" style="margin-top:10px;overflow:auto"></div>
+</div>
+
+<script>
+  document.getElementById("load").addEventListener("click", async ()=>{
+    const url = document.getElementById("backend-url").value.trim();
+    if(!url) { alert("Paste the Apps Script web app URL (the same you deployed)."); return; }
+    document.getElementById("status").textContent = "Loading...";
+    try {
+      const res = await fetch(url);
+      const js = await res.json();
+      if(js.status !== "ok"){ document.getElementById("status").textContent = "Error: " + (js.message || "unknown"); return; }
+      const rows = js.rows || [];
+      buildTable(rows);
+      document.getElementById("status").textContent = `Loaded ${rows.length} submissions. Click column headers to sort.`;
+    } catch(err){
+      document.getElementById("status").textContent = "Fetch error: " + err;
+    }
+  });
+
+  function buildTable(rows){
+    if(!rows || !rows.length){ document.getElementById("tableWrap").innerHTML = "<div class='muted'>No data</div>"; return; }
+    const headers = Object.keys(rows[0]);
+    let html = "<table id='dataTable'><thead><tr>";
+    headers.forEach(h => html += "<th data-key='"+h+"'>"+h+"</th>");
+    html += "</tr></thead><tbody>";
+    rows.forEach(r=>{
+      html += "<tr>";
+      headers.forEach(h=>{
+        html += "<td>"+(r[h] !== undefined ? r[h] : "")+"</td>";
+      });
+      html += "</tr>";
+    });
+    html += "</tbody></table>";
+    document.getElementById("tableWrap").innerHTML = html;
+
+    document.querySelectorAll("#dataTable th").forEach(th=>{
+      th.addEventListener("click", ()=> sortTable(th.dataset.key));
+    });
+  }
+
+  function sortTable(key){
+    const url = document.getElementById("backend-url").value.trim();
+    if(!url) return;
+    // simple re-fetch and sort client-side
+    fetch(url).then(r => r.json()).then(js=>{
+      const rows = js.rows || [];
+      rows.sort((a,b)=>{
+        const va = (a[key] || "").toString().toLowerCase();
+        const vb = (b[key] || "").toString().toLowerCase();
+        if(va < vb) return -1;
+        if(va > vb) return 1;
+        return 0;
+      });
+      buildTable(rows);
+    }).catch(err => document.getElementById("status").textContent = "Fetch error: "+err);
+  }
+</script>
+</body>
+</html>
