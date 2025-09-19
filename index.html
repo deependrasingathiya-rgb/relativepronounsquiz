@@ -477,4 +477,11 @@ submitBtn.addEventListener("click", async ()=>{
       }
     } catch(err){
       console.error("POST failed:", err);
+
       saveToLocalFallback(payload, "Network or backend unreachable");
+    }
+  } 
+}); 
+</script>
+</body>
+</html>
